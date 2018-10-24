@@ -1,7 +1,7 @@
 module.exports={
     secert:"FuZhuoNing",
     exp(){
-        return Math.round(Math.floor(Date.now()/ 1000) - 30);
+        return Math.round(Math.floor(Date.now()/ 1000));
     },
 
 

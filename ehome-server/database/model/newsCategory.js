@@ -9,4 +9,4 @@ const newsCategorySchema=new mongoose.Schema({
         unique:true,
     }
 },{versionKey:false,timestamps:{createdAt:"createTime",updateAt:"updateTime"}});
-module.exports=mongoose.model("newsCategory",newsCategorySchema)
+module.exports=mongoose.model("categories",newsCategorySchema)

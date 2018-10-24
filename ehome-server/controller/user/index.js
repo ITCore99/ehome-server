@@ -3,13 +3,21 @@ const router=Router();
 const user=require("../../database/model/user");
 const tokenConfig=require("../../config/tokenConfig");
 const jwt=require("jsonwebtoken");
-
+const validate=require("../../config/validate")
 
 
 router.post("/add",(req,res,next)=>{
 
-    let {idCardNumber,pwd,userName}=req.body;
-    if(idCardNumber&&pwd,userName)
+    let {idCardNumber,userName,homeAddress,nation,qqNumber,weChat,avatar}=req.body;
+    if(!req.session&&req.session.userInfo)
+    {
+       res.json({
+           code:400,
+           msg:"登陆过期"
+       })
+        return;
+    }
+    if(idCardNumber&&userName&&homeAddress&&nation&&qqNumber&&weChat&&avatar)
     {
         user.findOne({idCardNumber}).then(data=>{
             if(data!=null)
@@ -21,7 +29,7 @@ router.post("/add",(req,res,next)=>{
                 return;
             }else
             {
-                user.create({idCardNumber,pwd,userName}).then(data=>{
+                user.create({idCardNumber,userName,homeAddress,nation,qqNumber,weChat,avatar}).then(data=>{
                    res.json({
                        code:"200",
                        msg:"添加成功"
@@ -38,7 +46,8 @@ router.post("/add",(req,res,next)=>{
     }
 });
 router.post("/userInfo",(req,res,next)=>{
-    let {token,idCardNumber}=req.body;
+    let {idCardNumber}=req.body;
+    let token=req.headers.token;
     jwt.verify(token,tokenConfig.secert,(err,decoded)=>{
         if(err)
         {
@@ -48,7 +57,7 @@ router.post("/userInfo",(req,res,next)=>{
             });
             return;
         }
-        user.findOne({idCardNumber}).then(data=>{
+        user.find().sort({_id:-1}).select("-pwd").then(data=>{
             if(data===null)
             {
                 res.json({
@@ -67,10 +76,11 @@ router.post("/userInfo",(req,res,next)=>{
     })
 });
 router.post("/updatePwd",(req,res,next)=>{
+
     let {idCardNumber,pwd,newPwd}=req.body;
     if(idCardNumber&&pwd&&newPwd)
     {
-        user.findOne({idCardNumber}).then(data=>{
+        user.find({idCardNumber}).then(data=>{
             if(data.pwd==pwd)
             {
                 user.update({idCardNumber},{$set:{pwd:newPwd}}).then(data=>{
@@ -96,4 +106,46 @@ router.post("/updatePwd",(req,res,next)=>{
         })
     }
 });
+router.get("/select/:id",async(req,res,next)=>{
+    try
+    {
+        let {id}=req.params;
+        console.log(id);
+        let data=await user.findOne({_id:id});
+
+        res.json({
+            code:200,
+            msg:"查询成功",
+            data,
+        })
+
+    }catch (err)
+    {
+        next(err);
+        console.log(err);
+    }
+});
+router.patch("/update/:id",validate,async(req,res,next)=>{
+
+    try
+    {
+        let {id} =req.params;
+        let { userName, homeAddress, idCardNumber, nation, qqNumber, weChat, avatar}=req.body;
+        let data=await user.findOne({_id:id});/**返回来的data仍然是一个mongoose对象*/
+        let updatedata= await data.update({$set:{userName, homeAddress, idCardNumber, nation, qqNumber, weChat, avatar}});
+
+        res.json({
+            code:200,
+            msg:"修改信息成功",
+            data:updatedata
+        })
+
+    }catch(err)
+    {
+        next(err);
+    }
+
+
+
+})
 module.exports=router

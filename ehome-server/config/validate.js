@@ -1,0 +1,12 @@
+module.exports=function(req,res,next)
+{
+    if(req.session&&req.session.userInfo)
+    {
+        next();
+    }else{
+        res.json({
+            code:400,
+            msg:"登陆失效"
+        })
+    }
+}

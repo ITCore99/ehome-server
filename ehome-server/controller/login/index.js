@@ -4,6 +4,7 @@ const jwt=require("jsonwebtoken");
 const tokenConfig=require("../../config/tokenConfig");
 let user=require("../../database/model/user");
 
+
 router.post("/login",(req,res,next)=>{
 
     let {idCardNumber,pwd}  =req.body;
@@ -24,10 +25,12 @@ router.post("/login",(req,res,next)=>{
                 idCardNumber:data.idCardNumber,
             };
             let token=jwt.sign(useInfo,tokenConfig.secert,{expiresIn:tokenConfig.exp()});
+            req.session.userInfo=data;
             res.json({
                 code:200,
                 msg:"登陆成功",
                 token,
+                data,
             });
         }else
         {

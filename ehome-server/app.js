@@ -4,10 +4,18 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var mongooseConnect=require('./config/dbConfig');
 var logger = require('morgan');
-
+const session=require('express-session');
+const MongoStore = require('connect-mongo')(session);
 
 
 var app = express();
+app.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false,expires:1000*60*60*24*14},
+    store: new MongoStore({ mongooseConnection: mongooseConnect })
+}));
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
